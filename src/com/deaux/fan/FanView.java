@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +19,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 public class FanView extends RelativeLayout {
+
+	private final String TAG = "FanView";
 
 	private LinearLayout mMainView;
 	private LinearLayout mFanView;
@@ -47,9 +50,9 @@ public class FanView extends RelativeLayout {
 				R.styleable.FanView);
 
 		px = a.getDimension(R.styleable.FanView_menuSize, TypedValue
-				.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 200,
+				.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 180,
 						getResources().getDisplayMetrics()));
-		animDur = 1000;
+		animDur = 300;
 		fade = true;
 	}
 
@@ -76,8 +79,8 @@ public class FanView extends RelativeLayout {
 		mgr.beginTransaction().add(R.id.appView, main).commit();
 		mgr.beginTransaction().add(R.id.fanView, fan).commit();
 	}
-	
-	public void replaceMainFragment(Fragment replacement){
+
+	public void replaceMainFragment(Fragment replacement) {
 		FragmentManager mgr = ((FragmentActivity) getContext())
 				.getSupportFragmentManager();
 		mgr.beginTransaction().replace(R.id.appView, replacement).commit();
@@ -105,6 +108,7 @@ public class FanView extends RelativeLayout {
 
 	public void showMenu() {
 		if (mFanView.getVisibility() == GONE || isClosing) {
+			
 			mFanView.setVisibility(VISIBLE);
 			mTintView.setVisibility(VISIBLE);
 
@@ -124,7 +128,9 @@ public class FanView extends RelativeLayout {
 
 			mMainView.startAnimation(openAnimation);
 			isClosing = false;
+
 		} else if (!isClosing && isOpen()) {
+
 			closeAnimation = new FanAnimation(px, 0, 0,
 					TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, -20,
 							getResources().getDisplayMetrics()), animDur);
@@ -154,6 +160,7 @@ public class FanView extends RelativeLayout {
 			}
 			mMainView.startAnimation(closeAnimation);
 			isClosing = true;
+
 		}
 	}
 
@@ -180,17 +187,19 @@ public class FanView extends RelativeLayout {
 				Transformation t) {
 			super.applyTransformation(interpolatedTime, t);
 
-			if (interpolatedTime < 1.0f) {
-				// Applies a Smooth Transition that starts fast but ends slowly
-				mainLayoutParams.leftMargin = (int) (mainStartX + ((mainEndX - mainStartX) * (Math
-						.pow(interpolatedTime - 1, 5) + 1)));
-				fanLayoutParams.leftMargin = (int) (fanStartX + ((fanEndX - fanStartX) * (Math
-						.pow(interpolatedTime - 1, 5) + 1)));
-				mainLayoutParams.rightMargin = -mainLayoutParams.leftMargin;
+			// Applies a Smooth Transition that starts fast but ends slowly
+			mainLayoutParams.leftMargin = (int) (mainStartX + ((mainEndX - mainStartX) * (Math
+					.pow(interpolatedTime - 1, 5) + 1)));
+			fanLayoutParams.leftMargin = (int) (fanStartX + ((fanEndX - fanStartX) * (Math
+					.pow(interpolatedTime - 1, 5) + 1)));
+			mainLayoutParams.rightMargin = -mainLayoutParams.leftMargin;
 
-				mMainView.requestLayout();
-				mFanView.requestLayout();
-			}
+			if (fanLayoutParams.leftMargin == 0)
+				return;
+
+			mMainView.requestLayout();
+			mFanView.requestLayout();
+
 		}
 	}
 
